@@ -1,18 +1,19 @@
-#include<iostream>
-#include<fstream>
-
 #include "interfaz.h"
-#include "tablero.h"
+#include <iostream>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
+    std::cout << "\n=== SHIKAKU ===\n";
+
     Tablero tablero;
-    int opcion;
 
-    do {
-        mostrarMenu();
-        std::cin >> opcion;
-        ejecutarOpcion(opcion, tablero);
-    } while (opcion != 0);
+    if (argc >= 2) {
+        if (cargarTablero(argv[1], tablero))
+            std::cout << "Tablero cargado ("
+                    << tablero.filas << "x" << tablero.columnas << ").\n";
+        else
+            return 1;
+    }
 
+    loopJuego(tablero);
     return 0;
 }
