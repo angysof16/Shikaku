@@ -1,0 +1,162 @@
+
+## Algoritmo 1 — Generar candidatos de una pista
+
+Este procedimiento es igual para fuerza bruta y heurística.
+Dado una pista en (pf, pc) con valor v, genera todos los rectángulos posibles que la contienen, caben en el tablero, y no encierran otra pista.
+
+```
+Requiere: tablero.celdas[H][W], pista en (pf, pc) con valor val
+Produce:  lista de posibilidades
+
+procedimiento GenerarPosibilidades(pf, pc, val):
+ 1:   posibilidades ← lista vacía
+ 2:   para alto desde 1 hasta val:
+ 3:       si val mod alto ≠ 0: continuar
+ 4:       ancho ← val / alto
+ 5:       si ancho > W: continuar
+ 6:       fila_min ← max(0, pf − alto + 1)
+ 7:       fila_max ← min(H − alto, pf)
+ 8:       col_min ← max(0, pc − ancho + 1)
+ 9:       col_max ← min(W − ancho, pc)
+10:       para fila desde fila_min hasta fila_max:
+11:           para col desde col_min hasta col_max:
+12:               otraPista ← falso
+13:               para i desde fila hasta fila + alto − 1:
+14:                   para j desde col hasta col + ancho − 1:
+15:                       si tablero.celdas[i][j] > 0 y (i,j) ≠ (pf,pc):
+16:                           otraPista ← verdadero
+17:                   fin para
+18:               fin para
+19:               si no otraPista:
+20:                   posibilidades ← posibilidades ∪ {(fila, col, alto, ancho)}
+21:               fin si
+22:           fin para
+23:       fin para
+24:   fin para
+25:   retornar posibilidades
+fin procedimiento
+```
+
+---
+
+## Algoritmo 2 — Fuerza bruta con backtracking
+
+```
+Requiere: pistas[][], posibilidades[][], tablero.regiones[H][W] inicializado en −1
+Produce:  tablero.regiones[H][W] lleno si hay solución, o "sin solución"
+
+procedimiento EsValido(fi, ci, alto, ancho):
+ 1:   para i desde fi hasta fi + alto − 1:
+ 2:       para j desde ci hasta ci + ancho − 1:
+ 3:           si tablero.regiones[i][j] ≥ 0:
+ 4:               retornar falso
+ 5:           fin si
+ 6:       fin para
+ 7:   fin para
+ 8:   retornar verdadero
+fin procedimiento
+
+procedimiento Marcar(fi, ci, alto, ancho, id):
+ 1:   para i desde fi hasta fi + alto − 1:
+ 2:       para j desde ci hasta ci + ancho − 1:
+ 3:           tablero.regiones[i][j] ← id
+ 4:       fin para
+ 5:   fin para
+fin procedimiento
+
+procedimiento Desmarcar(fi, ci, alto, ancho):
+ 1:   para i desde fi hasta fi + alto − 1:
+ 2:       para j desde ci hasta ci + ancho − 1:
+ 3:           tablero.regiones[i][j] ← −1
+ 4:       fin para
+ 5:   fin para
+fin procedimiento
+
+procedimiento BacktrackingFB(idx):
+ 1:   si idx = |pistas|:
+ 2:       retornar verdadero
+ 3:   fin si
+ 4:   para cada R = (fi, ci, alto, ancho) en posibilidades[idx]:
+ 5:       si EsValido(fi, ci, alto, ancho):
+ 6:           Marcar(fi, ci, alto, ancho, idx)
+ 7:           si BacktrackingFB(idx + 1):
+ 8:               retornar verdadero
+ 9:           fin si
+10:           Desmarcar(fi, ci, alto, ancho)
+11:       fin si
+12:   fin para
+13:   retornar falso
+fin procedimiento
+
+procedimiento Principal_FB:
+ 1:   pistas ← todas las (r, c) donde tablero.celdas[r][c] > 0
+ 2:   para cada p en pistas:
+ 3:       posibilidades[p] ← GenerarPosibilidades(p.fila, p.col, p.valor)
+ 4:   fin para
+ 5:   tablero.regiones[H][W] ← −1 (todo sin asignar)
+ 6:   si BacktrackingFB(0):
+ 7:       retornar tablero.regiones
+ 8:   sino:
+ 9:       retornar "sin solución"
+10:   fin si
+fin procedimiento
+```
+
+---
+
+## Algoritmo 3 — Backtracking con heurística (orden por candidatos)
+
+La única diferencia con fuerza bruta está en el `Principal`: antes de llamar al backtracking,
+se ordenan las pistas de menor a mayor número de candidatos. El backtracking en sí es idéntico.
+Esto es lo que hace que explore muchas menos ramas en la práctica.
+
+```
+Requiere: pistas[], candidatos[][], regiones[H][W] inicializado en −1
+Produce:  regiones[H][W] lleno si hay solución, o "sin solución"
+
+// EsValido, Marcar, Desmarcar: idénticos al Algoritmo 2
+
+procedimiento BacktrackingH(idx):
+ 1:   si idx = |pistas|:
+ 2:       retornar verdadero
+ 3:   fin si
+ 4:   para cada R = (fi, ci, alto, ancho) en posibilidades[idx]:
+ 5:       si EsValido(fi, ci, alto, ancho):
+ 6:           Marcar(fi, ci, alto, ancho, idx)
+ 7:           si BacktrackingH(idx + 1):
+ 8:               retornar verdadero
+ 9:           fin si
+10:           Desmarcar(fi, ci, alto, ancho)
+11:       fin si
+12:   fin para
+13:   retornar falso
+fin procedimiento
+
+procedimiento Principal_H:
+ 1:   pistas ← todas las (r, c) donde tablero.celdas[r][c] > 0
+ 2:   para cada p en pistas:
+ 3:       posibilidades[p] ← GenerarPosibilidades(p.fila, p.col, p.valor)
+ 4:   fin para
+ 5:   // Ordenar pistas de menor a mayor número de posibilidades
+ 6:   para i desde 0 hasta |pistas| − 2:
+ 7:       para j desde i+1 hasta |pistas| − 1:
+ 8:           si |posibilidades[i]| > |posibilidades[j]|:
+ 9:               intercambiar pistas[i] con pistas[j]
+10:               intercambiar posibilidades[i] con posibilidades[j]
+11:           fin si
+12:       fin para
+13:   fin para
+14:   tablero.regiones[H][W] ← −1
+15:   si BacktrackingH(0):
+16:       retornar tablero.regiones
+17:   sino:
+18:       retornar "sin solución"
+19:   fin si
+fin procedimiento
+```
+
+---
+
+Un par de notas para el documento:
+
+El algoritmo 3 tiene el mismo **peor caso teórico** que el 2 — si todas las pistas tienen el mismo número de candidatos, el orden no cambia nada. La diferencia está en el **caso promedio**: al poner primero las pistas con menos opciones (especialmente las que tienen un solo candidato, que son las que "solo tienen una dirección a donde ir" que mencionaste), el árbol se poda desde los primeros niveles y raramente llega a explorar la parte profunda.
