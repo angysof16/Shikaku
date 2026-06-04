@@ -46,17 +46,20 @@ std::vector<Rectangulo> generarPosibilidadesFB( const Tablero &tablero, int pf, 
     int H = tablero.filas;
     int W = tablero.columnas;
 
+    // itero sobre divisores de val
     for ( int alto = 1; alto <= val; alto++ ){
         if( val % alto != 0 ) continue;
 
         int ancho = val / alto;
         if ( ancho > W ) continue;
 
+        // rangos validos de filas y columnas
         int fila_min = std::max( 0, pf - alto + 1 );
         int fila_max = std::min( H - alto, pf );
         int col_min = std::max( 0, pc - ancho + 1 );
         int col_max = std::min( W - ancho, pc );
 
+        // para cada posicion de inicio calculo rectangulo y verifico que no haya otro numero dentro
         for ( int fila = fila_min; fila <= fila_max; fila++ ){
             for ( int col = col_min; col <= col_max; col++ ){
                 bool otroNumero = false;
@@ -112,12 +115,17 @@ static void desmarcarFB ( Tablero &tablero, const Rectangulo &R ){
 
 // algoritmo de fuerza bruta con backtracking ALGORITMO 2
 static bool backtrackingFB ( Tablero &tablero, const std::vector<Numero> &numeros, std::vector< std::vector<Rectangulo> > &posibilidades, int idx ){
+    // CASO BASE se asignaron todos los numeros
     if ( idx == (int)numeros.size() ) {
-        return true; // se asignaron todos los numeros
+        return true;
     }
 
     for (Rectangulo &R : posibilidades[idx] ){
         if ( esValidoFB ( tablero, R ) ){
+
+            // si es válido, lo coloca marca las celdas con su ID y recurse al siguiente número
+            // si esa rama encuentra solución, propaga el true hacia arriba.
+
             int id = (int)tablero.rectangulos.size();
             tablero.rectangulos.push_back( R );
             marcarFB ( tablero, R, id );
@@ -127,10 +135,12 @@ static bool backtrackingFB ( Tablero &tablero, const std::vector<Numero> &numero
             }
 
             //backtracking
+            // si la rama no encontró solución, deshace la asignación
             tablero.rectangulos.pop_back();
             desmarcarFB ( tablero, R );
         }
     }
+    // si ningún candidato funciono, devuelve false para que el nivel anterior sepa que debe retroceder
     return false;
 }
 
