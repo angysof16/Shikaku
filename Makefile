@@ -1,22 +1,21 @@
+SRCS = src/shikaku.cxx \
+    src/tablero.cxx \
+    src/human.cxx \
+    src/fuerza_bruta.cxx \
+    src/heuristica.cxx
+
+OBJS = $(SRCS:src/%.cxx=build/%.o)
+
 all: shikaku
 
-shikaku: shikaku.o tablero.o human.o fuerza_bruta.o heuristica.o
-	g++ -std=c++23 -g -O1 -Wall shikaku.o tablero.o human.o fuerza_bruta.o heuristica.o -o shikaku
+shikaku: $(OBJS)
+	g++ -std=c++23 -g -O1 -Wall -Iinclude $(OBJS) -o shikaku
 
-shikaku.o: shikaku.cxx human.h fuerza_bruta.h heuristica.h tablero.h
-	g++ -std=c++23 -g -O1 -Wall -c shikaku.cxx
+build/%.o: src/%.cxx | build
+	g++ -std=c++23 -g -O1 -Wall -Iinclude -c $< -o $@
 
-tablero.o: tablero.cxx tablero.h
-	g++ -std=c++23 -g -O1 -Wall -c tablero.cxx
-
-human.o: human.cxx human.h tablero.h
-	g++ -std=c++23 -g -O1 -Wall -c human.cxx
-
-fuerza_bruta.o: fuerza_bruta.cxx fuerza_bruta.h tablero.h
-	g++ -std=c++23 -g -O1 -Wall -c fuerza_bruta.cxx
-
-heuristica.o: heuristica.cxx heuristica.h tablero.h
-	g++ -std=c++23 -g -O1 -Wall -c heuristica.cxx
+build:
+	mkdir -p build
 
 clean:
-	rm -rf *.o shikaku
+	rm -rf build shikaku
