@@ -93,21 +93,21 @@ bool validarTablero( const Tablero &tablero ){
     const Rectangulo &r = tablero.rectangulos[id];
     int area    = r.alto * r.ancho;
     int val     = 0;
-    int npistas = 0;
+    int numeros = 0;
 
     for ( int i = r.fila; i < r.fila + r.alto; i++ )
       for ( int j = r.col; j < r.col + r.ancho; j++ )
         if ( tablero.celdas[i][j] > 0 ){
           val = tablero.celdas[i][j];
-          npistas++;
+          numeros++;
         }
 
-    if ( npistas != 1 ){
-      std::cerr << "Rectangulo " << id << " tiene " << npistas << " pistas (debe tener exactamente 1)\n";
+    if ( numeros != 1 ){
+      std::cerr << "Rectangulo " << id << " tiene " << numeros << " numeros (debe tener exactamente 1)\n";
       return false;
     }
     if ( val != area ){
-      std::cerr << "Rectangulo " << id << ": pista=" << val << " pero area=" << area << "\n";
+      std::cerr << "Rectangulo " << id << ": numero=" << val << " pero area=" << area << "\n";
       return false;
     }
   }
